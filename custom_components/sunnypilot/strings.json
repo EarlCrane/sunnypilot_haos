@@ -2,8 +2,11 @@
   "config": {
     "step": {
       "user": {
-        "title": "Authorize sunnypilot",
-        "description": "Open the URL below on your phone and enter the code to authorize:\n\n**URL:** {url}\n\n**Code:** `{code}`\n\nThis page will advance automatically once authorized."
+        "title": "Connect to Sunnylink",
+        "description": "Enter your Sunnylink refresh token. See the README for how to obtain it from your browser's local storage after logging in at sunnylink.ai.",
+        "data": {
+          "refresh_token": "Refresh Token"
+        }
       },
       "device": {
         "title": "Select device",
@@ -12,13 +15,14 @@
         }
       }
     },
+    "error": {
+      "invalid_auth": "Invalid or expired refresh token.",
+      "cannot_connect": "Could not reach Sunnylink. Check your network."
+    },
     "abort": {
       "already_configured": "Device already configured.",
       "no_devices": "No sunnypilot devices found on this account.",
-      "cannot_connect": "Could not connect to Sunnylink. Check your network.",
-      "auth_failed": "Authorization failed.",
-      "access_denied": "Authorization was denied.",
-      "device_code_expired": "The authorization code expired. Please try again."
+      "cannot_connect": "Could not reach Sunnylink. Check your network."
     }
   }
 }
