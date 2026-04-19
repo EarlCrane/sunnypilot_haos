@@ -72,20 +72,19 @@ class SunnypilotConfigFlow(ConfigFlow, domain=DOMAIN):
         if not self._devices:
             return self.async_abort(reason="no_devices")
 
+        def _device_id(d: dict) -> str:
+            return d.get("device_id") or d.get("dongleId") or d.get("id") or ""
+
+        def _device_name(d: dict) -> str:
+            return d.get("name") or _device_id(d) or "Unknown"
+
         if user_input is not None:
             device_id = user_input[CONF_DEVICE_ID]
-            device_name = next(
-                (
-                    d.get("name") or d.get("dongleId") or device_id
-                    for d in self._devices
-                    if d.get("dongleId") == device_id or d.get("id") == device_id
-                ),
-                device_id,
-            )
             await self.async_set_unique_id(device_id)
             self._abort_if_unique_id_configured()
+            device = next((d for d in self._devices if _device_id(d) == device_id), {})
             return self.async_create_entry(
-                title=f"sunnypilot ({device_name})",
+                title=f"sunnypilot ({_device_name(device)})",
                 data={
                     CONF_REFRESH_TOKEN: self._refresh_token,
                     CONF_DEVICE_ID: device_id,
@@ -95,12 +94,11 @@ class SunnypilotConfigFlow(ConfigFlow, domain=DOMAIN):
         # Auto-select if exactly one device
         if len(self._devices) == 1:
             device = self._devices[0]
-            device_id = device.get("dongleId") or device.get("id") or ""
-            device_name = device.get("name") or device_id
+            device_id = _device_id(device)
             await self.async_set_unique_id(device_id)
             self._abort_if_unique_id_configured()
             return self.async_create_entry(
-                title=f"sunnypilot ({device_name})",
+                title=f"sunnypilot ({_device_name(device)})",
                 data={
                     CONF_REFRESH_TOKEN: self._refresh_token,
                     CONF_DEVICE_ID: device_id,
@@ -109,8 +107,7 @@ class SunnypilotConfigFlow(ConfigFlow, domain=DOMAIN):
 
         # Multiple devices — show selector
         device_options = {
-            d.get("dongleId") or d.get("id"): d.get("name") or d.get("dongleId") or "Unknown"
-            for d in self._devices
+            _device_id(d): _device_name(d) for d in self._devices
         }
         return self.async_show_form(
             step_id="device",
