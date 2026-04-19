@@ -13,6 +13,13 @@
         "data": {
           "device_id": "Device"
         }
+      },
+      "reauth_confirm": {
+        "title": "Re-authenticate with Sunnylink",
+        "description": "Your Sunnylink session has expired. Get a fresh refresh token from your browser (sunnylink.ai → DevTools → Local Storage → refresh_token) and paste it below. Note: refresh tokens expire after approximately 14 days — if your system was offline longer than that, you will need to re-enter a token.",
+        "data": {
+          "refresh_token": "Refresh Token"
+        }
       }
     },
     "error": {
@@ -22,7 +29,8 @@
     "abort": {
       "already_configured": "Device already configured.",
       "no_devices": "No sunnypilot devices found on this account.",
-      "cannot_connect": "Could not reach Sunnylink. Check your network."
+      "cannot_connect": "Could not reach Sunnylink. Check your network.",
+      "reauth_successful": "Re-authentication successful."
     }
   }
 }

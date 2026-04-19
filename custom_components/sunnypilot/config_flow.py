@@ -115,3 +115,47 @@ class SunnypilotConfigFlow(ConfigFlow, domain=DOMAIN):
                 vol.Required(CONF_DEVICE_ID): vol.In(device_options),
             }),
         )
+
+    async def async_step_reauth(
+        self, entry_data: dict[str, Any]
+    ) -> ConfigFlowResult:
+        """Handle re-authentication when token is invalid."""
+        return await self.async_step_reauth_confirm()
+
+    async def async_step_reauth_confirm(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Show re-auth form and update the config entry on success."""
+        errors: dict[str, str] = {}
+
+        if user_input is not None:
+            token = user_input[CONF_REFRESH_TOKEN].strip()
+            client = SunnylinkClient(token)
+            try:
+                await self.hass.async_add_executor_job(client.authenticate)
+            except SunnylinkError as err:
+                _LOGGER.error("Re-auth failed: %s", err)
+                errors["base"] = "invalid_auth"
+            except Exception as err:  # noqa: BLE001
+                _LOGGER.error("Unexpected re-auth error: %s", err, exc_info=True)
+                errors["base"] = "cannot_connect"
+            else:
+                entry = self.hass.config_entries.async_get_entry(
+                    self.context["entry_id"]
+                )
+                if entry:
+                    self.hass.config_entries.async_update_entry(
+                        entry,
+                        data={
+                            **entry.data,
+                            CONF_REFRESH_TOKEN: client.current_refresh_token,
+                        },
+                    )
+                    await self.hass.config_entries.async_reload(entry.entry_id)
+                return self.async_abort(reason="reauth_successful")
+
+        return self.async_show_form(
+            step_id="reauth_confirm",
+            data_schema=vol.Schema({vol.Required(CONF_REFRESH_TOKEN): str}),
+            errors=errors,
+        )

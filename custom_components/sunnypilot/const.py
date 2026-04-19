@@ -4,15 +4,20 @@ from __future__ import annotations
 DOMAIN = "sunnypilot"
 CONF_REFRESH_TOKEN = "refresh_token"
 CONF_DEVICE_ID = "device_id"
-UPDATE_INTERVAL = 30  # seconds
+UPDATE_INTERVAL = 15  # seconds
 
 # platform: "switch" | "select" | "number"
 # For select params, options list must be non-empty or the entity is skipped.
 # Keys match the exact Sunnylink API param keys.
+# Select options are ordered to match the integer index the API stores (0 = first option).
 PARAM_REGISTRY: dict[str, dict] = {
-    # ── Device ───────────────────────────────────────────────────────────────
+    # ── Device Settings ───────────────────────────────────────────────────────
     "OffroadMode": {
         "platform": "switch", "name": "Offroad Mode", "group": "device",
+    },
+    "DeviceBootMode": {
+        "platform": "select", "name": "Device Boot Mode", "group": "device",
+        "options": ["Standard", "Always Offroad"], "param_type": "Int",
     },
     "IsMetric": {
         "platform": "switch", "name": "Metric Units", "group": "device",
@@ -36,17 +41,17 @@ PARAM_REGISTRY: dict[str, dict] = {
         "platform": "switch", "name": "GSM Roaming", "group": "device",
     },
     "MaxTimeOffroad": {
-        "platform": "number", "name": "Max Time Offroad (min)", "group": "device",
-        "min": 0, "max": 1440, "step": 1,
+        "platform": "number", "name": "Max Time Offroad", "group": "device",
+        "min": 0, "max": 1440, "step": 1, "unit": "min",
     },
     # ── Toggles ──────────────────────────────────────────────────────────────
     "OpenpilotEnabledToggle": {
         "platform": "switch", "name": "openpilot Enabled", "group": "toggles",
     },
     "LongitudinalPersonality": {
+        # 0=Relaxed, 1=Standard, 2=Aggressive (matches sunnypilot enum order)
         "platform": "select", "name": "Driving Personality", "group": "toggles",
-        "options": ["Relaxed", "Standard", "Aggressive"],
-        "param_type": "Int",
+        "options": ["Relaxed", "Standard", "Aggressive"], "param_type": "Int",
     },
     "IsLdwEnabled": {
         "platform": "switch", "name": "Lane Departure Warning", "group": "toggles",
@@ -58,7 +63,7 @@ PARAM_REGISTRY: dict[str, dict] = {
         "platform": "switch", "name": "Wide Camera", "group": "toggles",
     },
     "AlwaysOnDM": {
-        "platform": "switch", "name": "Always-on Driver Monitoring", "group": "toggles",
+        "platform": "switch", "name": "Always-on Driver Monitor", "group": "toggles",
     },
     "DisableLogging": {
         "platform": "switch", "name": "Disable Logging", "group": "toggles",
@@ -86,8 +91,8 @@ PARAM_REGISTRY: dict[str, dict] = {
         "platform": "switch", "name": "LAGD Toggle", "group": "toggles",
     },
     "LagdToggleDelay": {
-        "platform": "number", "name": "LAGD Delay (s)", "group": "toggles",
-        "min": 0, "max": 10, "step": 1,
+        "platform": "number", "name": "LAGD Delay", "group": "toggles",
+        "min": 0, "max": 10, "step": 1, "unit": "s",
     },
     "LaneTurnDesire": {
         "platform": "number", "name": "Lane Turn Desire", "group": "toggles",
@@ -101,6 +106,11 @@ PARAM_REGISTRY: dict[str, dict] = {
     "Mads": {
         "platform": "switch", "name": "MADS Enabled", "group": "steering",
     },
+    "MadsSteeringMode": {
+        # 0=Remain Active, 1=Pause, 2=Disengage (from webarchive UI)
+        "platform": "select", "name": "MADS Steering Mode", "group": "steering",
+        "options": ["Remain Active", "Pause", "Disengage"], "param_type": "Int",
+    },
     "MadsMainCruiseAllowed": {
         "platform": "switch", "name": "MADS Main Cruise Allowed", "group": "steering",
     },
@@ -110,6 +120,11 @@ PARAM_REGISTRY: dict[str, dict] = {
     "EnforceTorqueControl": {
         "platform": "switch", "name": "Enforce Torque Control", "group": "steering",
     },
+    "TorqueControlTune": {
+        # 0=v0.0, 1=v1.0 (from webarchive: "Default: 0.0 Default v1.0 v0.0")
+        "platform": "select", "name": "Torque Control Tune", "group": "steering",
+        "options": ["v0.0", "v1.0"], "param_type": "Int",
+    },
     "CustomTorqueParams": {
         "platform": "switch", "name": "Custom Torque Params", "group": "steering",
     },
@@ -118,17 +133,17 @@ PARAM_REGISTRY: dict[str, dict] = {
     },
     "TorqueParamsOverrideLatAccelFactor": {
         "platform": "number", "name": "Lat Accel Factor", "group": "steering",
-        "min": 0.0, "max": 5.0, "step": 0.01,
+        "min": 0.1, "max": 5.0, "step": 0.01,
     },
     "TorqueParamsOverrideFriction": {
         "platform": "number", "name": "Friction Override", "group": "steering",
-        "min": 0.0, "max": 2.0, "step": 0.01,
+        "min": 0.0, "max": 1.0, "step": 0.01,
     },
     "LiveTorqueParamsToggle": {
-        "platform": "switch", "name": "Live Torque Params", "group": "steering",
+        "platform": "switch", "name": "Live Torque Self-Tune", "group": "steering",
     },
     "LiveTorqueParamsRelaxedToggle": {
-        "platform": "switch", "name": "Live Torque Params (Relaxed)", "group": "steering",
+        "platform": "switch", "name": "Live Torque Self-Tune (Relaxed)", "group": "steering",
     },
     "BlinkerPauseLateralControl": {
         "platform": "switch", "name": "Pause Lateral on Blinker", "group": "steering",
@@ -138,12 +153,12 @@ PARAM_REGISTRY: dict[str, dict] = {
         "min": 0, "max": 100, "step": 1,
     },
     "AutoLaneChangeTimer": {
-        "platform": "number", "name": "Auto Lane Change Timer (s)", "group": "steering",
-        "min": 0, "max": 10, "step": 0.5,
+        "platform": "number", "name": "Auto Lane Change Timer", "group": "steering",
+        "min": 0, "max": 3, "step": 0.5, "unit": "s",
     },
     "AutoLaneChangeBsmDelay": {
-        "platform": "number", "name": "BSM Delay", "group": "steering",
-        "min": 0, "max": 5, "step": 0.1,
+        # UI shows as "Enabled/Disabled" boolean, not a numeric delay
+        "platform": "switch", "name": "Auto Lane Change BSM Delay", "group": "steering",
     },
     "EnableHkgTuningAngleSmoothingFactor": {
         "platform": "switch", "name": "HKG Angle Smoothing", "group": "steering",
@@ -181,10 +196,30 @@ PARAM_REGISTRY: dict[str, dict] = {
         "platform": "switch", "name": "Dynamic Experimental Control", "group": "cruise",
     },
     "HyundaiLongitudinalTuning": {
-        "platform": "switch", "name": "Hyundai Longitudinal Tuning", "group": "cruise",
+        # UI shows select: Off / Dynamic / Predictive (not a switch)
+        "platform": "select", "name": "Hyundai Longitudinal Tuning", "group": "cruise",
+        "options": ["Off", "Dynamic", "Predictive"], "param_type": "Int",
+    },
+    "SpeedLimitMode": {
+        # 0=Off, 1=Information, 2=Warning, 3=Assist (from webarchive)
+        "platform": "select", "name": "Speed Limit Assist Mode", "group": "cruise",
+        "options": ["Off", "Information", "Warning", "Assist"], "param_type": "Int",
+    },
+    "SpeedLimitPolicy": {
+        # 0=Car State Only, 1=Map Data Only, 2=Car State Priority, 3=Map Data Priority, 4=Combined
+        "platform": "select", "name": "Speed Limit Source", "group": "cruise",
+        "options": [
+            "Car State Only", "Map Data Only",
+            "Car State Priority", "Map Data Priority", "Combined",
+        ], "param_type": "Int",
+    },
+    "SpeedLimitOffsetType": {
+        # 0=Off, 1=Fixed, 2=Percentage (from webarchive)
+        "platform": "select", "name": "Speed Limit Offset Type", "group": "cruise",
+        "options": ["Off", "Fixed", "Percentage"], "param_type": "Int",
     },
     "SpeedLimitValueOffset": {
-        "platform": "number", "name": "Speed Offset Value", "group": "cruise",
+        "platform": "number", "name": "Speed Limit Offset", "group": "cruise",
         "min": -30, "max": 30, "step": 1,
     },
     "SmartCruiseControlVision": {
@@ -200,12 +235,14 @@ PARAM_REGISTRY: dict[str, dict] = {
         "platform": "switch", "name": "Custom ACC Increments", "group": "cruise",
     },
     "CustomAccShortPressIncrement": {
+        # UI shows range 1-10 (not 1-20 as originally assumed)
         "platform": "number", "name": "Short Press Increment", "group": "cruise",
-        "min": 1, "max": 20, "step": 1,
+        "min": 1, "max": 10, "step": 1,
     },
     "CustomAccLongPressIncrement": {
+        # UI shows range 1-10, default 5
         "platform": "number", "name": "Long Press Increment", "group": "cruise",
-        "min": 1, "max": 20, "step": 1,
+        "min": 1, "max": 10, "step": 1,
     },
     # ── Developer ────────────────────────────────────────────────────────────
     "SshEnabled": {

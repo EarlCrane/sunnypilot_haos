@@ -14,11 +14,6 @@ from .entity import SunnypilotEntity
 
 _LOGGER = logging.getLogger(__name__)
 
-# LongitudinalPersonality API values are integers 0/1/2.
-# Map label → int for writes, int → label for reads.
-_PERSONALITY_BY_LABEL: dict[str, int] = {"Relaxed": 0, "Standard": 1, "Aggressive": 2}
-_PERSONALITY_BY_VALUE: dict[int, str] = {v: k for k, v in _PERSONALITY_BY_LABEL.items()}
-
 
 async def async_setup_entry(
     hass: HomeAssistant,
@@ -40,29 +35,32 @@ class SunnypilotSelect(SunnypilotEntity, SelectEntity):
     def __init__(self, coordinator: SunnypilotCoordinator, param_key: str, param_meta: dict) -> None:
         super().__init__(coordinator, param_key, param_meta)
         self._attr_options = list(param_meta.get("options", []))
-        self._param_type: str = param_meta.get("param_type", "String")
+        self._param_type: str = param_meta.get("param_type", "Int")
 
     @property
     def current_option(self) -> str | None:
         val = self.current_value
         if val is None:
             return None
-        # Int-backed selects: map value → label
-        if self._param_type == "Int" and isinstance(val, int):
-            if self._param_key == "LongitudinalPersonality":
-                return _PERSONALITY_BY_VALUE.get(val)
-        return str(val) if str(val) in self._attr_options else None
+        if self._param_type == "Int":
+            # Generic: API stores the index into options list
+            if isinstance(val, int) and 0 <= val < len(self._attr_options):
+                return self._attr_options[val]
+            if isinstance(val, float):
+                idx = int(val)
+                if 0 <= idx < len(self._attr_options):
+                    return self._attr_options[idx]
+        # String-backed: match directly
+        label = str(val)
+        return label if label in self._attr_options else None
 
     async def async_select_option(self, option: str) -> None:
-        # Resolve label → API value
         if self._param_type == "Int":
-            if self._param_key == "LongitudinalPersonality":
-                api_value = _PERSONALITY_BY_LABEL.get(option, 1)
-            else:
-                try:
-                    api_value = int(option)
-                except ValueError:
-                    api_value = option
+            try:
+                api_value: object = self._attr_options.index(option)
+            except ValueError:
+                _LOGGER.error("Option %r not in %s options", option, self._param_key)
+                return
         else:
             api_value = option
 

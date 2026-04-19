@@ -4,7 +4,7 @@ from __future__ import annotations
 import base64
 import json
 import logging
-import time
+import time as _time
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -193,10 +193,12 @@ class SunnylinkClient:
     def __init__(self, refresh_token: str) -> None:
         self._refresh_token = refresh_token
         self._token_payload: dict | None = None
+        self._token_obtained_at: float = 0.0
 
     def authenticate(self) -> None:
         payload = refresh_tokens(self._refresh_token)
         self._token_payload = payload
+        self._token_obtained_at = _time.monotonic()
         rotated = payload.get("refresh_token")
         if isinstance(rotated, str) and rotated:
             self._refresh_token = rotated
@@ -205,9 +207,25 @@ class SunnylinkClient:
     def current_refresh_token(self) -> str:
         return self._refresh_token
 
+    @property
+    def refresh_token_expires_in(self) -> int | None:
+        """Return refresh_token_expires_in from last token response, or None."""
+        val = (self._token_payload or {}).get("refresh_token_expires_in")
+        if isinstance(val, (int, float)):
+            return int(val)
+        return None
+
     def _id_token(self) -> str:
-        if self._token_payload is None:
-            self.authenticate()
+        """Return a valid id_token, re-authenticating if expired or absent."""
+        if self._token_payload is not None:
+            expires_in = (self._token_payload or {}).get("expires_in", 3600)
+            age = _time.monotonic() - self._token_obtained_at
+            if age < (int(expires_in) - 60):
+                token = self._token_payload.get("id_token")
+                if isinstance(token, str) and token:
+                    return token
+        # Token absent or within 60 s of expiry — re-authenticate
+        self.authenticate()
         token = (self._token_payload or {}).get("id_token")
         if not isinstance(token, str) or not token:
             raise SunnylinkError("No id_token available after authentication.")
@@ -218,7 +236,7 @@ class SunnylinkClient:
             f"{SUNNYLINK_API_BASE}/users/self/devices",
             headers=_api_headers(self._id_token()),
         )
-        _LOGGER.warning("get_devices raw response: %s", payload)
+        _LOGGER.debug("get_devices raw response: %s", payload)
         # Handle bare list response
         if isinstance(payload, list):
             return payload
