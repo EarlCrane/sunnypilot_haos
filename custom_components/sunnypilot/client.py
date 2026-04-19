@@ -3,10 +3,13 @@ from __future__ import annotations
 
 import base64
 import json
+import logging
 import time
 import urllib.error
 import urllib.parse
 import urllib.request
+
+_LOGGER = logging.getLogger(__name__)
 
 LOGTO_TOKEN_URL = "https://logto.sunnypilot.ai/oidc/token"
 LOGTO_DEVICE_AUTH_URL = "https://logto.sunnypilot.ai/oidc/device/auth"
@@ -215,10 +218,20 @@ class SunnylinkClient:
             f"{SUNNYLINK_API_BASE}/users/self/devices",
             headers=_api_headers(self._id_token()),
         )
-        devices = payload.get("devices") or payload.get("data") or []
+        _LOGGER.warning("get_devices raw response: %s", payload)
+        # Handle bare list response
         if isinstance(payload, list):
-            devices = payload
-        return devices if isinstance(devices, list) else []
+            return payload
+        # Try common dict keys
+        for key in ("devices", "data", "results", "items"):
+            val = payload.get(key)
+            if isinstance(val, list):
+                return val
+        # If the dict itself looks like a single device, wrap it
+        if payload.get("dongleId") or payload.get("id"):
+            return [payload]
+        _LOGGER.error("get_devices: unrecognised response shape: %s", payload)
+        return []
 
     def get_values(self, device_id: str, param_keys: list[str]) -> dict:
         qs = urllib.parse.urlencode({"paramKeys": param_keys}, doseq=True)

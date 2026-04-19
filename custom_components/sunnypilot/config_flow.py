@@ -65,8 +65,8 @@ class SunnypilotConfigFlow(ConfigFlow, domain=DOMAIN):
                 self._devices = await self.hass.async_add_executor_job(
                     self._client.get_devices
                 )
-            except SunnylinkError as err:
-                _LOGGER.error("Failed to fetch devices: %s", err)
+            except Exception as err:  # noqa: BLE001
+                _LOGGER.error("Failed to fetch devices: %s", err, exc_info=True)
                 return self.async_abort(reason="cannot_connect")
 
         if not self._devices:
