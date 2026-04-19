@@ -6,6 +6,10 @@ __pycache__/
 venv/
 env/
 
+# Testing
+.log
+html/
+
 # macOS
 .DS_Store
 
