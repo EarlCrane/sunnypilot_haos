@@ -24,6 +24,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         _LOGGER.error("Authentication failed: %s", err)
         return False
 
+    # Persist rotated refresh token (Logto rotates on every use)
+    if client.current_refresh_token != entry.data[CONF_REFRESH_TOKEN]:
+        hass.config_entries.async_update_entry(
+            entry,
+            data={**entry.data, CONF_REFRESH_TOKEN: client.current_refresh_token},
+        )
+
     coordinator = SunnypilotCoordinator(hass, client, entry.data[CONF_DEVICE_ID])
     await coordinator.async_config_entry_first_refresh()
 

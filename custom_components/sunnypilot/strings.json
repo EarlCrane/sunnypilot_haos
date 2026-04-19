@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Connect to Sunnylink",
-        "description": "Enter your Sunnylink refresh token. See the README for how to obtain it from your browser's local storage after logging in at sunnylink.ai.",
+        "description": "Enter your Sunnylink refresh token. See the README for how to get it from your browser after logging in at sunnylink.ai.",
         "data": {
           "refresh_token": "Refresh Token"
         }
