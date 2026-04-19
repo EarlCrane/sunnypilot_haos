@@ -1,0 +1,24 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Authorize sunnypilot",
+        "description": "Open the URL below on your phone and enter the code to authorize:\n\n**URL:** {url}\n\n**Code:** `{code}`\n\nThis page will advance automatically once authorized."
+      },
+      "device": {
+        "title": "Select device",
+        "data": {
+          "device_id": "Device"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "Device already configured.",
+      "no_devices": "No sunnypilot devices found on this account.",
+      "cannot_connect": "Could not connect to Sunnylink. Check your network.",
+      "auth_failed": "Authorization failed.",
+      "access_denied": "Authorization was denied.",
+      "device_code_expired": "The authorization code expired. Please try again."
+    }
+  }
+}

@@ -1,0 +1,230 @@
+title: sunnypilot
+views:
+  - title: Device
+    path: device
+    icon: mdi:car-connected
+    cards:
+      - type: entities
+        title: Device
+        entities:
+          - entity: switch.sunnypilot_off_road_mode
+            name: Offroad Mode
+          - entity: switch.sunnypilot_metric_units
+            name: Metric Units
+          - entity: switch.sunnypilot_quiet_mode
+            name: Quiet Mode
+          - entity: switch.sunnypilot_on_road_uploads
+            name: Onroad Uploads
+          - entity: switch.sunnypilot_record_front
+            name: Record Front Camera
+          - entity: switch.sunnypilot_record_audio
+            name: Record Audio
+          - entity: switch.sunnypilot_gsm_metered
+            name: GSM Metered
+          - entity: switch.sunnypilot_gsm_roaming
+            name: GSM Roaming
+      - type: entities
+        title: Device Settings
+        entities:
+          - entity: select.sunnypilot_language
+            name: Language
+          - entity: number.sunnypilot_max_time_offroad
+            name: Max Time Offroad (min)
+          - entity: number.sunnypilot_device_boot_mode
+            name: Boot Mode
+
+  - title: Toggles
+    path: toggles
+    icon: mdi:toggle-switch
+    cards:
+      - type: entities
+        title: Core
+        entities:
+          - entity: switch.sunnypilot_openpilot_enabled
+            name: openpilot Enabled
+          - entity: select.sunnypilot_longitudinal_personality
+            name: Driving Personality
+          - entity: switch.sunnypilot_ldw_enabled
+            name: Lane Departure Warning
+          - entity: switch.sunnypilot_disengage_on_accelerator
+            name: Disengage on Accelerator
+          - entity: switch.sunnypilot_wide_camera
+            name: Wide Camera
+          - entity: switch.sunnypilot_always_on_dm
+            name: Always-on Driver Monitoring
+      - type: entities
+        title: Data & Power
+        entities:
+          - entity: switch.sunnypilot_disable_logging
+            name: Disable Logging
+          - entity: switch.sunnypilot_disable_onroad_uploads
+            name: Disable Onroad Uploads
+          - entity: switch.sunnypilot_disable_power_down
+            name: Disable Power Down
+          - entity: switch.sunnypilot_disable_updates
+            name: Disable Updates
+      - type: entities
+        title: Lane Change
+        entities:
+          - entity: switch.sunnypilot_lagd_toggle
+            name: LAGD Toggle
+          - entity: number.sunnypilot_lagd_toggle_delay
+            name: LAGD Delay (s)
+          - entity: number.sunnypilot_lane_turn_desire
+            name: Lane Turn Desire
+          - entity: number.sunnypilot_lane_turn_value
+            name: Lane Turn Value
+          - entity: number.sunnypilot_camera_offset
+            name: Camera Offset
+      - type: entities
+        title: Subaru
+        entities:
+          - entity: switch.sunnypilot_subaru_stop_and_go
+            name: Stop and Go
+          - entity: switch.sunnypilot_subaru_manual_parking_brake
+            name: Manual Parking Brake
+
+  - title: Steering
+    path: steering
+    icon: mdi:steering
+    cards:
+      - type: entities
+        title: MADS
+        entities:
+          - entity: switch.sunnypilot_mads
+            name: MADS Enabled
+          - entity: select.sunnypilot_mads_steering_mode
+            name: MADS Steering Mode
+          - entity: switch.sunnypilot_mads_main_cruise_allowed
+            name: Main Cruise Allowed
+          - entity: switch.sunnypilot_mads_unified_engagement_mode
+            name: Unified Engagement Mode
+      - type: entities
+        title: Torque Control
+        entities:
+          - entity: switch.sunnypilot_enforce_torque_control
+            name: Enforce Torque Control
+          - entity: select.sunnypilot_torque_control_tune
+            name: Torque Control Tune
+          - entity: switch.sunnypilot_custom_torque_params
+            name: Custom Torque Params
+          - entity: switch.sunnypilot_torque_params_override_enabled
+            name: Torque Params Override
+          - entity: number.sunnypilot_torque_params_override_lat_accel_factor
+            name: Lat Accel Factor
+          - entity: number.sunnypilot_torque_params_override_friction
+            name: Friction Override
+          - entity: number.sunnypilot_live_torque_params
+            name: Live Torque Params
+          - entity: number.sunnypilot_live_torque_params_relaxed
+            name: Live Torque Params (Relaxed)
+      - type: entities
+        title: Lane Change
+        entities:
+          - entity: switch.sunnypilot_blinker_pause_lateral_control
+            name: Pause Lateral on Blinker
+          - entity: number.sunnypilot_blinker_min_lateral_control_speed
+            name: Min Lateral Speed (blinker)
+          - entity: number.sunnypilot_auto_lane_change_timer
+            name: Auto Lane Change Timer (s)
+          - entity: number.sunnypilot_auto_lane_change_bsm_delay
+            name: BSM Delay
+      - type: entities
+        title: HKG Tuning
+        entities:
+          - entity: switch.sunnypilot_hkg_angle_smoothing_factor_enabled
+            name: Angle Smoothing
+          - entity: number.sunnypilot_hkg_tuning_overriding_cycles
+            name: Overriding Cycles
+          - entity: number.sunnypilot_hkg_active_torque_reduction_gain
+            name: Active Torque Reduction
+          - entity: number.sunnypilot_hkg_min_torque_reduction_gain
+            name: Min Torque Reduction
+          - entity: number.sunnypilot_hkg_max_torque_reduction_gain
+            name: Max Torque Reduction
+      - type: entities
+        title: Advanced
+        entities:
+          - entity: switch.sunnypilot_neural_network_lateral_control
+            name: Neural Network Lateral Control
+          - entity: switch.sunnypilot_tesla_coop_steering
+            name: Tesla Coop Steering
+
+  - title: Cruise
+    path: cruise
+    icon: mdi:speedometer
+    cards:
+      - type: entities
+        title: Longitudinal
+        entities:
+          - entity: switch.sunnypilot_alpha_longitudinal_enabled
+            name: Alpha Longitudinal
+          - entity: switch.sunnypilot_experimental_mode
+            name: Experimental Mode
+          - entity: switch.sunnypilot_dynamic_experimental_control
+            name: Dynamic Experimental Control
+          - entity: switch.sunnypilot_hyundai_longitudinal_tuning
+            name: Hyundai Longitudinal Tuning
+      - type: entities
+        title: Speed Limit
+        entities:
+          - entity: select.sunnypilot_speed_limit_mode
+            name: Speed Limit Mode
+          - entity: select.sunnypilot_speed_limit_policy
+            name: Speed Limit Policy
+          - entity: select.sunnypilot_speed_limit_offset_type
+            name: Offset Type
+          - entity: number.sunnypilot_speed_limit_value_offset
+            name: Speed Offset Value
+      - type: entities
+        title: Smart Cruise Control
+        entities:
+          - entity: switch.sunnypilot_smart_cruise_control_vision
+            name: Vision-based SCC
+          - entity: switch.sunnypilot_smart_cruise_control_map
+            name: Map-based SCC
+          - entity: switch.sunnypilot_intelligent_cruise_button_management
+            name: Intelligent Button Management
+      - type: entities
+        title: ACC Increments
+        entities:
+          - entity: switch.sunnypilot_custom_acc_increments_enabled
+            name: Custom Increments Enabled
+          - entity: number.sunnypilot_custom_acc_short_press_increment
+            name: Short Press Increment
+          - entity: number.sunnypilot_custom_acc_long_press_increment
+            name: Long Press Increment
+
+  - title: Developer
+    path: developer
+    icon: mdi:code-braces
+    cards:
+      - type: entities
+        title: Access
+        entities:
+          - entity: switch.sunnypilot_ssh_enabled
+            name: SSH
+          - entity: switch.sunnypilot_adb_enabled
+            name: ADB
+          - entity: switch.sunnypilot_sunnylink_uploader_enabled
+            name: Sunnylink Uploader
+      - type: entities
+        title: Debug
+        entities:
+          - entity: switch.sunnypilot_show_advanced_controls
+            name: Show Advanced Controls
+          - entity: switch.sunnypilot_quick_boot
+            name: Quick Boot
+          - entity: switch.sunnypilot_enable_copyparty
+            name: Enable Copyparty
+          - entity: switch.sunnypilot_joystick_debug_mode
+            name: Joystick Debug Mode
+          - entity: select.sunnypilot_longitudinal_maneuver_mode
+            name: Longitudinal Maneuver Mode
+      - type: entities
+        title: GitHub Runner
+        entities:
+          - entity: switch.sunnypilot_enable_github_runner
+            name: GitHub Runner
+          - entity: switch.sunnypilot_github_runner_sufficient_voltage
+            name: Sufficient Voltage Check
