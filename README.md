@@ -2,7 +2,7 @@
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
 
-Control and monitor your [sunnypilot](https://github.com/sunnyhaibin/sunnypilot) device from Home Assistant. Toggle driving modes, adjust cruise and steering settings, and trigger changes via voice with Amazon Alexa — including from in-car Alexa in vehicles like the Rivian R1S/R1T.
+Control and monitor your [sunnypilot](https://github.com/sunnyhaibin/sunnypilot) device from Home Assistant. Toggle driving modes, adjust cruise and steering settings, and build dashboards or automations around SunnyLink-backed settings.
 
 ---
 
@@ -12,9 +12,16 @@ Control and monitor your [sunnypilot](https://github.com/sunnyhaibin/sunnypilot)
 - **49 switches** — one-tap toggles for features like Experimental Mode, MADS, openpilot Enabled, SSH, and more
 - **17 number sliders** — numeric controls for offsets, timers, and tuning gains
 - **1 select** — Driving Personality (Relaxed / Standard / Aggressive)
-- Polls the Sunnylink API every 30 seconds to reflect current device state
+- Polls the SunnyLink API every 15 seconds to reflect current device state
 - Changes take effect immediately on write; state refreshes after each action
-- Works with [Nabu Casa](https://www.nabucasa.com/) to expose entities to Amazon Alexa — say *"Alexa, turn on Experimental Mode"* from anywhere on your account, including in-car Alexa
+- Includes a ready-made Lovelace dashboard YAML
+- Installable through HACS as a custom repository
+
+Current status:
+- Working for my comma 4 / sunnypilot setup
+- Early community-maintained project
+- SunnyLink polling is cloud-based, so it depends on SunnyLink authentication and API behavior
+- Not affiliated with or maintained by sunnypilot, comma, or Home Assistant
 
 ---
 
@@ -58,7 +65,7 @@ If you haven't installed HACS yet, follow the [HACS installation guide](https://
 
 ### Authorization
 
-sunnypilot uses your Sunnylink account credentials. You'll need to provide a **refresh token** from your Sunnylink session. This is a one-time step — the integration refreshes the token automatically from then on.
+sunnypilot uses your SunnyLink account credentials. You'll need to provide a **refresh token** from your SunnyLink session. This is a one-time setup step — the integration refreshes the token automatically from then on.
 
 #### How to get your refresh token
 
@@ -70,7 +77,7 @@ sunnypilot uses your Sunnylink account credentials. You'll need to provide a **r
 4. Look for a key containing `refresh_token` — it may be nested inside a JSON value under a key like `logto:storage` or similar
 5. Copy the refresh token value (a long string starting with a random character sequence)
 
-Alternatively, if you have captured a HAR file from sunnylink.ai, search for `"refresh_token"` in it.
+Do not share your refresh token, browser local storage, HAR files, Home Assistant config entries, or captured SunnyLink API payloads. They may grant access to your SunnyLink account or device settings.
 
 #### Entering the token in Home Assistant
 
@@ -84,7 +91,7 @@ If your account has multiple sunnypilot devices, you'll be prompted to choose on
 
 ### Settings storage
 
-The integration stores your refresh token securely in Home Assistant's config entry storage — it is never written to disk in plain text outside of HA's encrypted storage.
+The integration stores your refresh token in Home Assistant's config entry storage. Treat Home Assistant backups and `.storage` files as sensitive.
 
 ---
 
@@ -162,7 +169,7 @@ Entities are grouped by the same navigation categories used in sunnypilot itself
 
 ## Alexa integration
 
-With a [Nabu Casa](https://www.nabucasa.com/) subscription, all switch entities are automatically exposed to Amazon Alexa. This includes in-car Alexa on supported vehicles (e.g. Rivian R1S/R1T) since Alexa uses your Amazon account across all devices.
+Voice control is a next step. With a [Nabu Casa](https://www.nabucasa.com/) subscription, selected switch entities can be exposed to Amazon Alexa. This may also work from in-car Alexa on supported vehicles because Alexa follows your Amazon account across devices.
 
 **Example voice commands:**
 - *"Alexa, turn on Experimental Mode"*
@@ -171,6 +178,8 @@ With a [Nabu Casa](https://www.nabucasa.com/) subscription, all switch entities 
 
 For select controls (like Driving Personality), create an HA Script for each option and expose it as a scene:
 - *"Alexa, turn on Relaxed Driving Mode"* → script sets personality to Relaxed
+
+Only expose entities you are comfortable controlling by voice. Some sunnypilot settings affect driving behavior.
 
 ---
 
@@ -199,6 +208,37 @@ The device must be online and the Sunnylink API must be reachable. Check your co
 
 **A setting doesn't change on the device**
 Some settings only take effect when the device is in offroad mode, or require a reboot. This is a sunnypilot constraint, not an integration issue.
+
+---
+
+## Sharing blurb
+
+I put together an unofficial Home Assistant custom integration for sunnypilot / SunnyLink.
+
+Repo: https://github.com/EarlCrane/sunnypilot_haos
+
+This is my first integration. I had the idea on a Friday, worked through it over the weekend, and was surprised by how quickly Home Assistant, HACS, and SunnyLink could be wired together.
+
+What it does:
+- Exposes 67 sunnypilot parameters as native Home Assistant entities
+- Adds 49 switches, 17 number controls, and 1 select control
+- Supports settings like Experimental Mode, MADS, openpilot Enabled, SSH, Driving Personality, torque tuning, upload controls, and more
+- Polls SunnyLink for current state and refreshes state after writes
+- Includes a Lovelace dashboard YAML
+- Installs through HACS as a custom repository
+
+Current status:
+- Working on my comma 4 / sunnypilot setup
+- Early community-maintained project
+- Uses SunnyLink cloud polling, so it depends on SunnyLink auth/API behavior
+- Not affiliated with or maintained by sunnypilot, comma, or Home Assistant
+
+Known limitations:
+- Some settings can affect driving behavior; use with care
+- Some settings may only apply offroad or after a device reboot
+- Voice control through Nabu Casa / Alexa is planned, but only expose controls you are comfortable triggering by voice
+
+Issues and PRs are welcome on GitHub.
 
 ---
 
