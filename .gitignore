@@ -23,5 +23,5 @@ html/
 # Agentic
 .claude/
 .claude
-.codex
+.codex/
 AGENTS.md

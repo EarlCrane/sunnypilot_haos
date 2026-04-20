@@ -22,6 +22,7 @@ class SunnypilotEntity(CoordinatorEntity[SunnypilotCoordinator]):
         super().__init__(coordinator)
         self._param_key = param_key
         self._attr_name = param_meta["name"]
+        self._attr_icon = param_meta.get("icon", "mdi:car-connected")
         self._attr_unique_id = f"{coordinator.device_id}_{param_key}"
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, coordinator.device_id)},

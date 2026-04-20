@@ -15,7 +15,12 @@ _LOGGER = logging.getLogger(__name__)
 
 
 class SunnypilotCoordinator(DataUpdateCoordinator[dict[str, object]]):
-    """Polls Sunnylink /values for all registered params every UPDATE_INTERVAL seconds."""
+    """Polls SunnyLink /values for all registered params every UPDATE_INTERVAL seconds.
+
+    This cloud polling path is less efficient and less durable than querying the
+    paired comma device directly. It is the current bridge until a device-local
+    SunnyLink/Athena-backed path is implemented.
+    """
 
     def __init__(
         self, hass: HomeAssistant, client: SunnylinkClient, entry: ConfigEntry
@@ -47,7 +52,7 @@ class SunnypilotCoordinator(DataUpdateCoordinator[dict[str, object]]):
                 data={**self._entry.data, CONF_REFRESH_TOKEN: new_token},
             )
 
-        values_list = raw.get("values") or raw.get("data") or []
+        values_list = raw.get("values") or raw.get("data") or raw.get("items") or []
         if isinstance(raw, list):
             values_list = raw
 
