@@ -23,6 +23,11 @@ Current status:
 - SunnyLink polling is cloud-based, so it depends on SunnyLink authentication and API behavior
 - Not affiliated with or maintained by sunnypilot, comma, or Home Assistant
 
+Next Steps:
+- Get Alexa working for in-car commands
+- Improve the auth so you don't have to dig up the token from developer mode
+- Local SSH login to Copyparty to download drives through HAOS
+
 ---
 
 ## Requirements
