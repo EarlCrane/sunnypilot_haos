@@ -33,6 +33,8 @@ async def async_setup_entry(
 class SunnypilotSwitch(SunnypilotEntity, SwitchEntity):
     """A switch entity for a Bool sunnypilot param."""
 
+    _attr_assumed_state = False
+
     @property
     def is_on(self) -> bool | None:
         val = self.current_value
