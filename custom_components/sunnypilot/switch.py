@@ -36,10 +36,10 @@ class SunnypilotSwitch(SunnypilotEntity, SwitchEntity):
     _attr_assumed_state = False
 
     @property
-    def is_on(self) -> bool | None:
+    def is_on(self) -> bool:
         val = self.current_value
         if val is None:
-            return None
+            return False
         return bool(val)
 
     async def async_turn_on(self, **kwargs: Any) -> None:
