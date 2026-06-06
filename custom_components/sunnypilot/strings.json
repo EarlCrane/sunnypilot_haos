@@ -3,17 +3,6 @@
     "step": {
       "user": {
         "title": "Connect to Sunnylink",
-        "description": "Choose how to sign in to your Sunnylink account.",
-        "data": {
-          "auth_method": "Sign-in method"
-        }
-      },
-      "device_code_poll": {
-        "title": "Sign in to Sunnylink",
-        "description": "Open the link below in your browser and sign in with GitHub, Google, Discord, GitLab, or Patreon.\n\n**[{url}]({url})**\n\nUser code (if prompted): `{user_code}`\n\nOnce you have signed in, click **Submit** to continue."
-      },
-      "manual_token": {
-        "title": "Connect to Sunnylink",
         "description": "Enter your Sunnylink refresh token. See the README for how to get it from your browser after logging in at sunnylink.ai.",
         "data": {
           "refresh_token": "Refresh Token"
@@ -27,35 +16,21 @@
       },
       "reauth_confirm": {
         "title": "Re-authenticate with Sunnylink",
-        "description": "Your Sunnylink session has expired. Choose how to sign in again.",
-        "data": {
-          "auth_method": "Sign-in method"
-        }
-      },
-      "reauth_device_code_poll": {
-        "title": "Re-authenticate with Sunnylink",
-        "description": "Open the link below in your browser and sign in with GitHub, Google, Discord, GitLab, or Patreon.\n\n**[{url}]({url})**\n\nUser code (if prompted): `{user_code}`\n\nOnce you have signed in, click **Submit** to continue."
-      },
-      "reauth_manual": {
-        "title": "Re-authenticate with Sunnylink",
-        "description": "Get a fresh refresh token from your browser (sunnylink.ai → DevTools → Local Storage → refresh_token) and paste it below.",
+        "description": "Your Sunnylink session has expired. Get a fresh refresh token from your browser (sunnylink.ai → DevTools → Local Storage → refresh_token) and paste it below. Note: refresh tokens expire after approximately 14 days — if your system was offline longer than that, you will need to re-enter a token.",
         "data": {
           "refresh_token": "Refresh Token"
         }
       }
     },
     "error": {
-      "invalid_auth": "Invalid or expired token.",
-      "cannot_connect": "Could not reach Sunnylink. Check your network.",
-      "auth_pending": "Not authorized yet — finish signing in at the URL above, then click Submit again."
+      "invalid_auth": "Invalid or expired refresh token.",
+      "cannot_connect": "Could not reach Sunnylink. Check your network."
     },
     "abort": {
       "already_configured": "Device already configured.",
       "no_devices": "No sunnypilot devices found on this account.",
       "cannot_connect": "Could not reach Sunnylink. Check your network.",
-      "reauth_successful": "Re-authentication successful.",
-      "device_code_expired": "The sign-in link has expired. Please restart the setup and try again.",
-      "access_denied": "Access was denied. Please restart the setup and try again."
+      "reauth_successful": "Re-authentication successful."
     }
   }
 }
