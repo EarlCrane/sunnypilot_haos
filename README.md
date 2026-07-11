@@ -252,3 +252,4 @@ Issues and PRs are welcome on GitHub.
 - [sunnypilot](https://github.com/sunnyhaibin/sunnypilot) by sunnyhaibin
 - [Sunnylink](https://www.sunnylink.ai) — the cloud backend this integration talks to
 - Built for personal use; not affiliated with the sunnypilot project
+- Created with LLM
