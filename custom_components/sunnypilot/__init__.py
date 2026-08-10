@@ -5,9 +5,9 @@ import logging
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryAuthFailed
+from homeassistant.exceptions import ConfigEntryAuthFailed, ConfigEntryNotReady
 
-from .client import SunnylinkClient, SunnylinkError
+from .client import SunnylinkAuthError, SunnylinkClient, SunnylinkError
 from .const import CONF_DEVICE_ID, CONF_REFRESH_TOKEN, DOMAIN
 from .coordinator import SunnypilotCoordinator
 
@@ -21,8 +21,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     client = SunnylinkClient(entry.data[CONF_REFRESH_TOKEN])
     try:
         await hass.async_add_executor_job(client.authenticate)
-    except SunnylinkError as err:
+    except SunnylinkAuthError as err:
         raise ConfigEntryAuthFailed(str(err)) from err
+    except SunnylinkError as err:
+        raise ConfigEntryNotReady(str(err)) from err
 
     # Persist rotated refresh token (Logto rotates on every use)
     if client.current_refresh_token != entry.data[CONF_REFRESH_TOKEN]:
