@@ -22,6 +22,8 @@ _USER_AGENT = (
     "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
     "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36"
 )
+_LOGTO_AUTH_ERROR_STATUSES = frozenset({400, 401, 403})
+_SUNNYLINK_AUTH_ERROR_STATUSES = frozenset({401, 403})
 
 PARAM_TYPE_NAMES: dict[int, str] = {
     0: "String",
@@ -38,6 +40,10 @@ class SunnylinkError(Exception):
     """Raised when the Sunnylink API returns an error."""
 
 
+class SunnylinkAuthError(SunnylinkError):
+    """Raised when Sunnylink or Logto rejects authentication credentials."""
+
+
 def _request(
     url: str,
     *,
@@ -45,6 +51,7 @@ def _request(
     headers: dict[str, str] | None = None,
     body: bytes | None = None,
     error_ok: bool = False,
+    auth_error_statuses: frozenset[int] = frozenset(),
 ) -> tuple[int, dict]:
     req = urllib.request.Request(url, data=body, method=method)
     for k, v in (headers or {}).items():
@@ -61,6 +68,10 @@ def _request(
             payload = {"raw": raw}
         if error_ok:
             return e.code, payload
+        if e.code in auth_error_statuses:
+            raise SunnylinkAuthError(
+                f"HTTP {e.code} {method} {url}: {payload}"
+            ) from e
         raise SunnylinkError(f"HTTP {e.code} {method} {url}: {payload}") from e
     except urllib.error.URLError as e:
         raise SunnylinkError(f"Request failed {method} {url}: {e}") from e
@@ -93,6 +104,7 @@ def refresh_tokens(refresh_token: str) -> dict:
         method="POST",
         headers={"Content-Type": "application/x-www-form-urlencoded"},
         body=body,
+        auth_error_statuses=_LOGTO_AUTH_ERROR_STATUSES,
     )
     return payload
 
@@ -215,9 +227,9 @@ class SunnylinkClient:
             return int(val)
         return None
 
-    def _id_token(self) -> str:
+    def _id_token(self, *, force_refresh: bool = False) -> str:
         """Return a valid id_token, re-authenticating if expired or absent."""
-        if self._token_payload is not None:
+        if not force_refresh and self._token_payload is not None:
             expires_in = (self._token_payload or {}).get("expires_in", 3600)
             age = _time.monotonic() - self._token_obtained_at
             if age < (int(expires_in) - 60):
@@ -231,10 +243,41 @@ class SunnylinkClient:
             raise SunnylinkError("No id_token available after authentication.")
         return token
 
+    def _authenticated_request(
+        self,
+        url: str,
+        *,
+        method: str = "GET",
+        content_type: str | None = None,
+        body: bytes | None = None,
+    ) -> tuple[int, dict]:
+        """Make an API request, refreshing and retrying once after a 401/403."""
+        token = self._id_token()
+        try:
+            return _request(
+                url,
+                method=method,
+                headers=_api_headers(token, content_type=content_type),
+                body=body,
+                auth_error_statuses=_SUNNYLINK_AUTH_ERROR_STATUSES,
+            )
+        except SunnylinkAuthError:
+            _LOGGER.debug(
+                "Sunnylink rejected the cached token; refreshing and retrying once"
+            )
+
+        token = self._id_token(force_refresh=True)
+        return _request(
+            url,
+            method=method,
+            headers=_api_headers(token, content_type=content_type),
+            body=body,
+            auth_error_statuses=_SUNNYLINK_AUTH_ERROR_STATUSES,
+        )
+
     def get_devices(self) -> list[dict]:
-        _, payload = _request(
-            f"{SUNNYLINK_API_BASE}/users/self/devices",
-            headers=_api_headers(self._id_token()),
+        _, payload = self._authenticated_request(
+            f"{SUNNYLINK_API_BASE}/users/self/devices"
         )
         _LOGGER.debug("get_devices raw response: %s", payload)
         # Handle bare list response
@@ -253,9 +296,8 @@ class SunnylinkClient:
 
     def get_values(self, device_id: str, param_keys: list[str]) -> dict:
         qs = urllib.parse.urlencode({"paramKeys": param_keys}, doseq=True)
-        _, payload = _request(
-            f"{SUNNYLINK_API_BASE}/settings/{device_id}/values?{qs}",
-            headers=_api_headers(self._id_token()),
+        _, payload = self._authenticated_request(
+            f"{SUNNYLINK_API_BASE}/settings/{device_id}/values?{qs}"
         )
         return payload
 
@@ -265,10 +307,10 @@ class SunnylinkClient:
             "value": encode_param_value(param_type, value),
             "is_compressed": False,
         }]).encode("utf-8")
-        _, payload = _request(
+        _, payload = self._authenticated_request(
             f"{SUNNYLINK_API_ROOT}/settings/{device_id}",
             method="POST",
-            headers=_api_headers(self._id_token(), content_type="application/json"),
+            content_type="application/json",
             body=body,
         )
         return payload

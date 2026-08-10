@@ -6,9 +6,15 @@ from datetime import timedelta
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
-from .client import SunnylinkClient, SunnylinkError, decode_param_value
+from .client import (
+    SunnylinkAuthError,
+    SunnylinkClient,
+    SunnylinkError,
+    decode_param_value,
+)
 from .const import ALL_PARAM_KEYS, CONF_REFRESH_TOKEN, DOMAIN, UPDATE_INTERVAL
 
 _LOGGER = logging.getLogger(__name__)
@@ -40,6 +46,8 @@ class SunnypilotCoordinator(DataUpdateCoordinator[dict[str, object]]):
             raw = await self.hass.async_add_executor_job(
                 self.client.get_values, self.device_id, ALL_PARAM_KEYS
             )
+        except SunnylinkAuthError as err:
+            raise ConfigEntryAuthFailed(str(err)) from err
         except SunnylinkError as err:
             raise UpdateFailed(f"Sunnylink API error: {err}") from err
 

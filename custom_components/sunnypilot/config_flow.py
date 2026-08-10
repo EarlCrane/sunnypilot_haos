@@ -8,7 +8,7 @@ import voluptuous as vol
 
 from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
 
-from .client import SunnylinkClient, SunnylinkError
+from .client import SunnylinkAuthError, SunnylinkClient, SunnylinkError
 from .const import CONF_DEVICE_ID, CONF_REFRESH_TOKEN, DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
@@ -35,9 +35,12 @@ class SunnypilotConfigFlow(ConfigFlow, domain=DOMAIN):
             client = SunnylinkClient(token)
             try:
                 await self.hass.async_add_executor_job(client.authenticate)
-            except SunnylinkError as err:
+            except SunnylinkAuthError as err:
                 _LOGGER.error("Authentication failed: %s", err)
                 errors["base"] = "invalid_auth"
+            except SunnylinkError as err:
+                _LOGGER.error("Unable to connect during authentication: %s", err)
+                errors["base"] = "cannot_connect"
             except Exception as err:  # noqa: BLE001
                 _LOGGER.error("Unexpected auth error: %s", err, exc_info=True)
                 errors["base"] = "cannot_connect"
@@ -68,6 +71,7 @@ class SunnypilotConfigFlow(ConfigFlow, domain=DOMAIN):
             except Exception as err:  # noqa: BLE001
                 _LOGGER.error("Failed to fetch devices: %s", err, exc_info=True)
                 return self.async_abort(reason="cannot_connect")
+            self._refresh_token = self._client.current_refresh_token
 
         if not self._devices:
             return self.async_abort(reason="no_devices")
@@ -133,9 +137,12 @@ class SunnypilotConfigFlow(ConfigFlow, domain=DOMAIN):
             client = SunnylinkClient(token)
             try:
                 await self.hass.async_add_executor_job(client.authenticate)
-            except SunnylinkError as err:
+            except SunnylinkAuthError as err:
                 _LOGGER.error("Re-auth failed: %s", err)
                 errors["base"] = "invalid_auth"
+            except SunnylinkError as err:
+                _LOGGER.error("Unable to connect during re-auth: %s", err)
+                errors["base"] = "cannot_connect"
             except Exception as err:  # noqa: BLE001
                 _LOGGER.error("Unexpected re-auth error: %s", err, exc_info=True)
                 errors["base"] = "cannot_connect"
